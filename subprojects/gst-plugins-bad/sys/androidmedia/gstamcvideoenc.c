@@ -380,7 +380,7 @@ caps_from_amc_format (GstAmcFormat * amc_format)
     }
 
     if (gst_amc_format_get_int (amc_format, "level", &amc_level, NULL)) {
-      level_string = gst_amc_mpeg4_level_to_string (amc_profile);
+      level_string = gst_amc_mpeg4_level_to_string (amc_level);
       if (!level_string)
         goto unsupported_level;
 
@@ -408,7 +408,7 @@ caps_from_amc_format (GstAmcFormat * amc_format)
     }
 
     if (gst_amc_format_get_int (amc_format, "level", &amc_level, NULL)) {
-      level_string = gst_amc_avc_level_to_string (amc_profile);
+      level_string = gst_amc_avc_level_to_string (amc_level);
       if (!level_string)
         goto unsupported_level;
 
