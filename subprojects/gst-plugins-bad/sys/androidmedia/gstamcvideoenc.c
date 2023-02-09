@@ -258,7 +258,7 @@ create_amc_format (GstAmcVideoEnc * encoder, GstVideoCodecState * input_state,
 
     /* FIXME: Set to any value in AVCProfile* leads to
      * codec configuration fail */
-    /* gst_amc_format_set_int (format, amc_profile.key, 0x40); */
+    gst_amc_format_set_int (format, amc_profile.key, 0x01);  // baseline
   }
 
   if (level_string) {
