@@ -258,14 +258,14 @@ create_amc_format (GstAmcVideoEnc * encoder, GstVideoCodecState * input_state,
 
     /* FIXME: Set to any value in AVCProfile* leads to
      * codec configuration fail */
-    /* gst_amc_format_set_int (format, amc_profile.key, 0x40); */
+    gst_amc_format_set_int (format, amc_profile.key, amc_profile.id);
   }
 
   if (level_string) {
     if (amc_level.id == -1)
       goto unsupported_level;
 
-    /* gst_amc_format_set_int (format, amc_level.key, amc_level.id); */
+    gst_amc_format_set_int (format, amc_level.key, amc_level.id);
   }
 
   /* On Android N_MR1 and higher, i-frame-interval can be a float value */
