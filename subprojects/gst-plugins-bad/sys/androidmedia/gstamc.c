@@ -1181,15 +1181,15 @@ static const struct
   const gchar *alt_str;
 } avc_profile_mapping_table[] = {
   {
-  AVCProfileBaseline, "baseline", "constrained-baseline"}, {
+  AVCProfileBaseline, "baseline", NULL}, {
   AVCProfileMain, "main", NULL}, {
   AVCProfileExtended, "extended", NULL}, {
-  AVCProfileHigh, "high", "constrained-high"}, {
+  AVCProfileHigh, "high", NULL}, {
   AVCProfileHigh10, "high-10", "high-10-intra"}, {
   AVCProfileHigh422, "high-4:2:2", "high-4:2:2-intra"}, {
   AVCProfileHigh444, "high-4:4:4", "high-4:4:4-intra"}, {
-  AVCProfileConstrainedBaseline, "baseline", "constrained-baseline"}, {
-  AVCProfileConstrainedHigh, "high", "constrained-high"}
+  AVCProfileConstrainedBaseline, "constrained-baseline", NULL}, {
+  AVCProfileConstrainedHigh, "constrained-high", NULL}
 };
 
 const gchar *
