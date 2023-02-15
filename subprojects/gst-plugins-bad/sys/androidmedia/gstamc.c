@@ -1800,6 +1800,9 @@ register_codecs (GstPlugin * plugin)
          */
         rank = GST_RANK_MARGINAL;
       } else if (g_str_has_prefix (codec_info->name, "OMX.")) {
+        rank = GST_RANK_SECONDARY;
+      } else if (g_str_has_prefix (codec_info->name, "c2.exynos") ||
+                 g_str_has_suffix (codec_info->name, "c2.google")) {
         rank = is_video ? GST_RANK_PRIMARY : GST_RANK_SECONDARY;
       } else {
         rank = GST_RANK_MARGINAL;
