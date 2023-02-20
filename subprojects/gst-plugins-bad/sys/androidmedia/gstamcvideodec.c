@@ -2451,8 +2451,8 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
   gst_query_parse_allocation (query, &caps, &need_pool);
   if (_caps_are_rgba_with_gl_memory (caps)) {
 
-    GST_TRACE ("before gst_gl_ensure_element_data);
-    
+    GST_TRACE ("before gst_gl_ensure_element_data");
+
     if (!gst_gl_ensure_element_data (self, &self->gl_display,
             &self->other_gl_context))
       return FALSE;
