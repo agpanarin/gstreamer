@@ -2442,7 +2442,7 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
   GstAmcVideoDec *self = GST_AMC_VIDEO_DEC (bdec);
   gboolean need_pool = FALSE;
   GstCaps *caps = NULL;
-  GError *error = NULL;
+//  GError *error = NULL;
 
   if (!GST_VIDEO_DECODER_CLASS (parent_class)->decide_allocation (bdec, query))
     return FALSE;
@@ -2455,8 +2455,9 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
             &self->other_gl_context))
       return FALSE;
 
-    if (!_find_local_gl_context (self))
-      goto out;
+  //  if (!_find_local_gl_context (self))
+  //    goto out;
+#if 0
     if (!self->gl_context) {
       GST_OBJECT_LOCK (self->gl_display);
       do {
@@ -2464,15 +2465,13 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
           gst_object_unref (self->gl_context);
           self->gl_context = NULL;
         }
-        GST_DEBUG_OBJECT (self, "Just get a GL context. We don't care");
         /* just get a GL context.  we don't care */
         self->gl_context =
             gst_gl_display_get_gl_context_for_thread (self->gl_display, NULL);
         if (!self->gl_context) {
-          GST_DEBUG_OBJECT (self, "Current context is NULL");
           if (!gst_gl_display_create_context (self->gl_display,
                   self->other_gl_context, &self->gl_context, &error)) {
-            GST_OBJECT_UNLOCK (self->gl_display);
+            GST_OBJECT_UNLOCK (mix->display);
             goto context_error;
           }
         }
@@ -2480,12 +2479,14 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
               self->gl_context));
       GST_OBJECT_UNLOCK (self->gl_display);
     }
+#endif
 
     self->downstream_supports_gl = TRUE;
   }
 
 out:
   return gst_amc_video_dec_check_codec_config (self);
+#if 0
 context_error:
   {
     GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND, ("%s", error->message),
@@ -2493,6 +2494,7 @@ context_error:
     g_clear_error (&error);
     return FALSE;
   }
+#endif
 }
 
 static void
