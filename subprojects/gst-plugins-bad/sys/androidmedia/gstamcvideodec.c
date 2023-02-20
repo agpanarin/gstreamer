@@ -2472,7 +2472,7 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
           GST_DEBUG_OBJECT (self, "Current context is NULL");
           if (!gst_gl_display_create_context (self->gl_display,
                   self->other_gl_context, &self->gl_context, &error)) {
-            GST_OBJECT_UNLOCK (mix->display);
+            GST_OBJECT_UNLOCK (self->gl_display);
             goto context_error;
           }
         }
@@ -2486,7 +2486,6 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
 
 out:
   return gst_amc_video_dec_check_codec_config (self);
-#if 0
 context_error:
   {
     GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND, ("%s", error->message),
@@ -2494,7 +2493,6 @@ context_error:
     g_clear_error (&error);
     return FALSE;
   }
-#endif
 }
 
 static void
