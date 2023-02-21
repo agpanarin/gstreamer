@@ -583,6 +583,11 @@ gst_amc_video_dec_change_state (GstElement * element, GstStateChange transition)
 
   switch (transition) {
     case GST_STATE_CHANGE_NULL_TO_READY:
+      GST_TRACE_OBJECT (self, "transition null to ready");
+      GST_TRACE ("before gst_gl_ensure_element_data");
+      if (!gst_gl_ensure_element_data (element, &self->display, &self->other_context))
+            return GST_STATE_CHANGE_FAILURE;
+      GST_TRACE ("gst_gl_ensure_element_data returned gl_context %p", self->other_gl_context);
       break;
     case GST_STATE_CHANGE_READY_TO_PAUSED:
       self->downstream_flow_ret = GST_FLOW_OK;
@@ -2453,14 +2458,6 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
   self->downstream_supports_gl = FALSE;
   gst_query_parse_allocation (query, &caps, &need_pool);
   if (_caps_are_rgba_with_gl_memory (caps)) {
-
-    GST_TRACE ("before gst_gl_ensure_element_data");
-
-    if (!gst_gl_ensure_element_data (self, &self->gl_display,
-            &self->other_gl_context))
-      return FALSE;
-
-    GST_TRACE ("gst_gl_ensure_element_data returned gl_context %p", self->other_gl_context);
 
     if (!_find_local_gl_context (self))
       goto out;
