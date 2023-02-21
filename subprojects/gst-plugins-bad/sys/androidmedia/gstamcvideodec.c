@@ -562,7 +562,7 @@ gst_amc_video_dec_set_context (GstElement * element, GstContext * context)
   gboolean result = gst_gl_handle_set_context (element, context, &self->gl_display,
       &self->other_gl_context);
 
-  GST_TRACE ("gst_gl_handle_set_context result %d", result);
+  GST_TRACE ("gst_gl_handle_set_context result %d context %p", result, self->other_gl_context);
   GST_ELEMENT_CLASS (parent_class)->set_context (element, context);
 }
 
