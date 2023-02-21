@@ -2457,12 +2457,12 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
             &self->other_gl_context))
       return FALSE;
 
-    GST_TRACE ("gst_gl_ensure_element_data returned gl_display %p and gl_context %p", self->gl_display, self->gl_context);
+    GST_TRACE ("gst_gl_ensure_element_data returned gl_context %" GST_PTR_FORMAT, self->other_gl_context);
 
     if (!_find_local_gl_context (self))
       goto out;
 
-    GST_TRACE ("_find_local_gl_context returned gl_context %p", self->gl_context);
+    GST_TRACE ("_find_local_gl_context returned gl_context %" GST_PTR_FORMAT, self->gl_context);
 #if 0
     if (!self->gl_context) {
       GST_OBJECT_LOCK (self->gl_display);
