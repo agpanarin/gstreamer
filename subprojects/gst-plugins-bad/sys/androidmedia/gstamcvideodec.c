@@ -1261,7 +1261,7 @@ _amc_gl_render_on_free (GstGLContext * context, GstGLSyncMeta * sync_meta)
 
   g_mutex_lock (&sync->sink->gl_lock);
   /* just render as many frames as we have */
-  GST_TRACE_OBJECT (self, "rendering with context %p", context);
+  GST_TRACE_OBJECT (sync->sink, "rendering with context %p", context);
   _amc_gl_iterate_queue_unlocked (sync_meta, FALSE);
   g_mutex_unlock (&sync->sink->gl_lock);
 }
