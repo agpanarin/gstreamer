@@ -249,6 +249,9 @@ gst_amc_video_dec_on_frame_available (GstAmcSurfaceTexture * texture,
 static gboolean
 gst_gl_base_filter_find_gl_context_unlocked (GstAmcVideoDec * self);
 
+static gboolean
+_find_local_gl_context (GstAmcVideoDec * self)
+
 enum
 {
   PROP_0
@@ -2483,7 +2486,7 @@ _find_local_gl_context (GstAmcVideoDec * self)
       }
     }
 
-    if (context->gl_display == self->gl_display) {
+    if (context->display == self->gl_display) {
       self->gl_context = context;
       return TRUE;
     }
