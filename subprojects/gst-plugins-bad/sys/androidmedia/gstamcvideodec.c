@@ -250,7 +250,7 @@ static gboolean
 gst_gl_base_filter_find_gl_context_unlocked (GstAmcVideoDec * self);
 
 static gboolean
-_find_local_gl_context (GstAmcVideoDec * self)
+_find_local_gl_context (GstAmcVideoDec * self);
 
 enum
 {
