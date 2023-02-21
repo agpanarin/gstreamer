@@ -172,8 +172,8 @@ _find_gl_sync_for_frame (GstAmcVideoDec * dec, guint frame)
 static void
 _attach_mem_to_context (GstGLContext * context, GstAmcVideoDec * self)
 {
-  GST_TRACE_OBJECT (self, "attaching texture %p id %u to current context",
-      self->surface, self->oes_mem->tex_id);
+  GST_TRACE_OBJECT (self, "attaching texture %p id %u to current context %p",
+      self->surface, self->oes_mem->tex_id, context);
   if (!gst_amc_surface_texture_attach_to_gl_context (self->surface,
           self->oes_mem->tex_id, &self->gl_error)) {
     GST_ERROR_OBJECT (self, "Failed to attach texture to the GL context");
@@ -1261,6 +1261,7 @@ _amc_gl_render_on_free (GstGLContext * context, GstGLSyncMeta * sync_meta)
 
   g_mutex_lock (&sync->sink->gl_lock);
   /* just render as many frames as we have */
+  GST_TRACE_OBJECT (self, "rendering with context %p", context);
   _amc_gl_iterate_queue_unlocked (sync_meta, FALSE);
   g_mutex_unlock (&sync->sink->gl_lock);
 }
