@@ -558,9 +558,11 @@ gst_amc_video_dec_set_context (GstElement * element, GstContext * context)
 {
   GstAmcVideoDec *self = GST_AMC_VIDEO_DEC (element);
 
-  gst_gl_handle_set_context (element, context, &self->gl_display,
+  GST_TRACE ("trying to set context %p in gst_gl_handle_set_context", context);
+  gboolean result = gst_gl_handle_set_context (element, context, &self->gl_display,
       &self->other_gl_context);
 
+  GST_TRACE ("gst_gl_handle_set_context result %d", result);
   GST_ELEMENT_CLASS (parent_class)->set_context (element, context);
 }
 
@@ -2457,12 +2459,12 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
             &self->other_gl_context))
       return FALSE;
 
-    GST_TRACE ("gst_gl_ensure_element_data returned gl_context %" GST_PTR_FORMAT, self->other_gl_context);
+    GST_TRACE ("gst_gl_ensure_element_data returned gl_context %p", self->other_gl_context);
 
     if (!_find_local_gl_context (self))
       goto out;
 
-    GST_TRACE ("_find_local_gl_context returned gl_context %" GST_PTR_FORMAT, self->gl_context);
+    GST_TRACE ("_find_local_gl_context returned gl_context %p", self->gl_context);
 #if 0
     if (!self->gl_context) {
       GST_OBJECT_LOCK (self->gl_display);
