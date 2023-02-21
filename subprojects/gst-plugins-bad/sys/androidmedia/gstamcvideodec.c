@@ -559,6 +559,7 @@ static void
 gst_amc_video_dec_set_context (GstElement * element, GstContext * context)
 {
   GstAmcVideoDec *self = GST_AMC_VIDEO_DEC (element);
+  GstGLDisplay *old_display, *new_display;
  // g_mutex_lock (&self->gl_lock);
   old_display = self->gl_display ? gst_object_ref (self->gl_display) : NULL;
 
@@ -2561,8 +2562,19 @@ gst_gl_base_filter_find_gl_context_unlocked (GstAmcVideoDec * self)
           self->gl_context);
 
   if (new_context && self->started) {
-    gst_amc_video_dec_stop(self);
-    gst_amc_video_dec_start(self);
+    gst_amc_video_dec_drain (self);
+    GST_VIDEO_DECODER_STREAM_UNLOCK (self);
+    gst_amc_video_dec_stop (GST_VIDEO_DECODER (self));
+    GST_VIDEO_DECODER_STREAM_LOCK (self);
+    gst_amc_video_dec_close (GST_VIDEO_DECODER (self));
+    if (!gst_amc_video_dec_open (GST_VIDEO_DECODER (self))) {
+      GST_ERROR_OBJECT (self, "Failed to open codec again");
+      return FALSE;
+    }
+
+    if (!gst_amc_video_dec_start (GST_VIDEO_DECODER (self))) {
+      GST_ERROR_OBJECT (self, "Failed to start codec again");
+    }
   }
 
   return TRUE;
