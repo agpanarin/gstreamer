@@ -585,7 +585,7 @@ gst_amc_video_dec_change_state (GstElement * element, GstStateChange transition)
     case GST_STATE_CHANGE_NULL_TO_READY:
       GST_TRACE_OBJECT (self, "transition null to ready");
       GST_TRACE ("before gst_gl_ensure_element_data");
-      if (!gst_gl_ensure_element_data (element, &self->display, &self->other_gl_context))
+      if (!gst_gl_ensure_element_data (element, &self->gl_display, &self->other_gl_context))
             return GST_STATE_CHANGE_FAILURE;
       GST_TRACE ("gst_gl_ensure_element_data returned gl_context %p", self->other_gl_context);
       break;
