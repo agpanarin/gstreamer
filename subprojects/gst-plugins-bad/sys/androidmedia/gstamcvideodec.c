@@ -577,7 +577,8 @@ gst_amc_video_dec_set_context (GstElement * element, GstContext * context)
   if (old_display && new_display) {
     if (old_display != new_display) {
       gst_clear_object (&self->gl_context);
-      _find_local_gl_context (self);
+      gst_gl_base_filter_find_gl_context_unlocked (self);
+      GST_TRACE_OBJECT (self, "gst_gl_base_filter_find_gl_context_unlocked returned gl_context %p", self->gl_context);
     }
   }
 
@@ -2615,7 +2616,7 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
     if (!gst_gl_base_filter_find_gl_context_unlocked (self))
       goto out;
 
-    GST_TRACE ("_find_local_gl_context returned gl_context %p", self->gl_context);
+    GST_TRACE_OBJECT (self, "gst_gl_base_filter_find_gl_context_unlocked returned gl_context %p", self->gl_context);
 #if 0
     if (!self->gl_context) {
       GST_OBJECT_LOCK (self->gl_display);
