@@ -2612,7 +2612,7 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
   gst_query_parse_allocation (query, &caps, &need_pool);
   if (_caps_are_rgba_with_gl_memory (caps)) {
 
-    if (!_find_local_gl_context (self))
+    if (!gst_gl_base_filter_find_gl_context_unlocked (self))
       goto out;
 
     GST_TRACE ("_find_local_gl_context returned gl_context %p", self->gl_context);
