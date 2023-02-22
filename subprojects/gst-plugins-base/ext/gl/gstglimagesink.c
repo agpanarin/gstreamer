@@ -1024,26 +1024,36 @@ _ensure_gl_setup (GstGLImageSink * gl_sink)
           "No current context, creating one for %" GST_PTR_FORMAT,
           gl_sink->display);
 
-      if (gl_sink->other_context) {
-        other_context = gst_object_ref (gl_sink->other_context);
-      } else {
-        other_context =
-            gst_gl_display_get_gl_context_for_thread (gl_sink->display, NULL);
-      }
+      if( !gl_sink->other_context )
+      {
+        if (gl_sink->other_context)
+        {
+          other_context = gst_object_ref(gl_sink->other_context);
+        }
+        else
+        {
+          other_context =
+                  gst_gl_display_get_gl_context_for_thread(gl_sink->display, NULL);
+        }
 
-      if (!gst_gl_display_create_context (gl_sink->display,
-              other_context, &context, &error)) {
-        if (other_context)
-          gst_object_unref (other_context);
-        GST_OBJECT_UNLOCK (gl_sink->display);
-        goto context_error;
-      }
-      _set_context (gl_sink, context);
-      context = NULL;
+        if (!gst_gl_display_create_context(gl_sink->display,
+                                           other_context, &context, &error))
+        {
+          if (other_context)
+            gst_object_unref(other_context);
+          GST_OBJECT_UNLOCK(gl_sink->display);
+          goto context_error;
+        }
+        _set_context(gl_sink, context);
+        context = NULL;
 
-      GST_DEBUG_OBJECT (gl_sink,
-          "created context %" GST_PTR_FORMAT " from other context %"
-          GST_PTR_FORMAT, gl_sink->context, gl_sink->other_context);
+        GST_DEBUG_OBJECT(gl_sink, "created context %"GST_PTR_FORMAT" from other context %"GST_PTR_FORMAT,
+                         gl_sink->context, gl_sink->other_context);
+      }
+      else
+      {
+        gl_sink->context = gst_object_ref(gl_sink->other_context);
+      }
 
       window = gst_gl_context_get_window (gl_sink->context);
 
