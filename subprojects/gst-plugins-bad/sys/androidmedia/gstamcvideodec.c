@@ -1207,6 +1207,7 @@ _amc_gl_wait_gl (GstGLContext * context, struct gl_wait *wait)
 {
   struct gl_sync *sync = wait->sync_meta->data;
 
+  GST_TRACE_OBJECT (sync->sink, "waiting with context %p", context);
   g_mutex_lock (&sync->sink->gl_lock);
   wait->ret = _amc_gl_iterate_queue_unlocked (wait->sync_meta, TRUE);
   g_mutex_unlock (&sync->sink->gl_lock);
@@ -1259,9 +1260,9 @@ _amc_gl_render_on_free (GstGLContext * context, GstGLSyncMeta * sync_meta)
 {
   struct gl_sync *sync = sync_meta->data;
 
+  GST_TRACE_OBJECT (sync->sink, "rendering with context %p", context);
   g_mutex_lock (&sync->sink->gl_lock);
   /* just render as many frames as we have */
-  GST_TRACE_OBJECT (sync->sink, "rendering with context %p", context);
   _amc_gl_iterate_queue_unlocked (sync_meta, FALSE);
   g_mutex_unlock (&sync->sink->gl_lock);
 }
