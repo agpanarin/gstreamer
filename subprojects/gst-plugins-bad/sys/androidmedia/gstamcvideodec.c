@@ -246,11 +246,6 @@ static gboolean gst_amc_video_dec_check_codec_config (GstAmcVideoDec * self);
 static void
 gst_amc_video_dec_on_frame_available (GstAmcSurfaceTexture * texture,
     gpointer user_data);
-static gboolean
-gst_gl_base_filter_find_gl_context_unlocked (GstAmcVideoDec * self);
-
-static gboolean
-_find_local_gl_context (GstAmcVideoDec * self);
 
 enum
 {
@@ -562,29 +557,12 @@ static void
 gst_amc_video_dec_set_context (GstElement * element, GstContext * context)
 {
   GstAmcVideoDec *self = GST_AMC_VIDEO_DEC (element);
-  GstGLDisplay *old_display, *new_display;
- // g_mutex_lock (&self->gl_lock);
-  old_display = self->gl_display ? gst_object_ref (self->gl_display) : NULL;
 
   GST_TRACE ("trying to set context %p in gst_gl_handle_set_context", context);
   gboolean result = gst_gl_handle_set_context (element, context, &self->gl_display,
       &self->other_gl_context);
 
   GST_TRACE ("gst_gl_handle_set_context result %d context %p", result, self->other_gl_context);
-
-  new_display = self->gl_display ? gst_object_ref (self->gl_display) : NULL;
-
-  if (old_display && new_display) {
-    if (old_display != new_display) {
-      gst_clear_object (&self->gl_context);
-      gst_gl_base_filter_find_gl_context_unlocked (self);
-      GST_TRACE_OBJECT (self, "gst_gl_base_filter_find_gl_context_unlocked returned gl_context %p", self->gl_context);
-    }
-  }
-
-  gst_clear_object (&old_display);
-  gst_clear_object (&new_display);
-
   GST_ELEMENT_CLASS (parent_class)->set_context (element, context);
 }
 
@@ -605,11 +583,6 @@ gst_amc_video_dec_change_state (GstElement * element, GstStateChange transition)
 
   switch (transition) {
     case GST_STATE_CHANGE_NULL_TO_READY:
-      GST_TRACE_OBJECT (self, "transition null to ready");
-      GST_TRACE ("before gst_gl_ensure_element_data");
-      if (!gst_gl_ensure_element_data (element, &self->gl_display, &self->other_gl_context))
-            return GST_STATE_CHANGE_FAILURE;
-      GST_TRACE ("gst_gl_ensure_element_data returned gl_context %p", self->other_gl_context);
       break;
     case GST_STATE_CHANGE_READY_TO_PAUSED:
       self->downstream_flow_ret = GST_FLOW_OK;
@@ -1235,7 +1208,6 @@ _amc_gl_wait_gl (GstGLContext * context, struct gl_wait *wait)
   struct gl_sync *sync = wait->sync_meta->data;
 
   g_mutex_lock (&sync->sink->gl_lock);
-  GST_TRACE_OBJECT (sync->sink, "waiting with context %p", context);
   wait->ret = _amc_gl_iterate_queue_unlocked (wait->sync_meta, TRUE);
   g_mutex_unlock (&sync->sink->gl_lock);
 }
@@ -2461,142 +2433,10 @@ _caps_are_rgba_with_gl_memory (GstCaps * caps)
 static gboolean
 _find_local_gl_context (GstAmcVideoDec * self)
 {
-  GstGLContext *context, *prev_context;
-  gboolean ret;
-
-  if (self->gl_context && self->gl_context->display == self->gl_display)
+  if (gst_gl_query_local_gl_context (GST_ELEMENT (self), GST_PAD_SRC,
+          &self->gl_context))
     return TRUE;
-
-  context = prev_context = self->gl_context;
-  //g_rec_mutex_unlock (&filter->priv->context_lock);
-  /* we need to drop the lock to query as another element may also be
-   * performing a context query on us which would also attempt to take the
-   * context_lock. Our query could block on the same lock in the other element.
-   */
-  ret =
-          gst_gl_query_local_gl_context (GST_ELEMENT (self), GST_PAD_SRC,
-                                         &context);
-  //g_rec_mutex_lock (&filter->priv->context_lock);
-  if (ret) {
-    if (self->gl_context != prev_context) {
-      /* we need to recheck everything since we dropped the lock and the
-       * context has changed */
-      if (self->gl_context && self->gl_context->display == self->gl_display) {
-        if (context != self->gl_context)
-          gst_clear_object (&context);
-        return TRUE;
-      }
-    }
-
-    if (context->display == self->gl_display) {
-      self->gl_context = context;
-      return TRUE;
-    }
-    if (context != self->gl_context)
-      gst_clear_object (&context);
-  }
-
-  context = prev_context = self->gl_context;
-  //g_rec_mutex_unlock (&filter->priv->context_lock);
-  /* we need to drop the lock to query as another element may also be
-   * performing a context query on us which would also attempt to take the
-   * context_lock. Our query could block on the same lock in the other element.
-   */
-  ret =
-          gst_gl_query_local_gl_context (GST_ELEMENT (self), GST_PAD_SINK,
-                                         &context);
-  //g_rec_mutex_lock (&filter->priv->context_lock);
-  if (ret) {
-    if (self->gl_context != prev_context) {
-      /* we need to recheck everything now that we dropped the lock */
-      if (self->gl_context && self->gl_context->display == self->gl_display) {
-        if (context != self->gl_context)
-          gst_clear_object (&context);
-        return TRUE;
-      }
-    }
-
-    if (context->display == self->gl_display) {
-      self->gl_context = context;
-      return TRUE;
-    }
-    if (context != self->gl_context)
-      gst_clear_object (&context);
-  }
   return FALSE;
-}
-
-static gboolean
-gst_gl_base_filter_find_gl_context_unlocked (GstAmcVideoDec * self)
-{
-  GError *error = NULL;
-  gboolean new_context = FALSE;
-
-  GST_DEBUG_OBJECT (self, "attempting to find an OpenGL context, existing %"
-  GST_PTR_FORMAT, self->gl_context);
-
-  if (!self->gl_context)
-    new_context = TRUE;
-
-  _find_local_gl_context (self);
-
-  if (!self->gl_display) {
-    GST_WARNING_OBJECT (self, "self has NULL display.");
-    return FALSE;
-  }
-
-  if (!self->gl_context) {
-    GST_OBJECT_LOCK (self->gl_display);
-    do {
-      if (self->gl_context)
-        gst_object_unref (self->gl_context);
-      /* just get a GL context.  we don't care */
-      self->gl_context =
-              gst_gl_display_get_gl_context_for_thread (self->gl_display, NULL);
-      if (!self->gl_context) {
-        if (!gst_gl_display_create_context (self->gl_display,
-                                            self->other_gl_context, &self->gl_context, &error)) {
-          GST_OBJECT_UNLOCK (self->gl_display);
-          goto context_error;
-        }
-      }
-    } while (!gst_gl_display_add_context (self->gl_display, self->gl_context));
-    GST_OBJECT_UNLOCK (self->gl_display);
-  }
-  GST_INFO_OBJECT (self, "found OpenGL context %p",
-          self->gl_context);
-
-  if (new_context && self->started) {
-    gst_amc_video_dec_drain (self);
-    GST_VIDEO_DECODER_STREAM_UNLOCK (self);
-    gst_amc_video_dec_stop (GST_VIDEO_DECODER (self));
-    GST_VIDEO_DECODER_STREAM_LOCK (self);
-    gst_amc_video_dec_close (GST_VIDEO_DECODER (self));
-    if (!gst_amc_video_dec_open (GST_VIDEO_DECODER (self))) {
-      GST_ERROR_OBJECT (self, "Failed to open codec again");
-      return FALSE;
-    }
-
-    if (!gst_amc_video_dec_start (GST_VIDEO_DECODER (self))) {
-      GST_ERROR_OBJECT (self, "Failed to start codec again");
-    }
-  }
-
-  return TRUE;
-
-  context_error:
-  {
-    GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND, ("%s", error->message),
-                       (NULL));
-    g_clear_error (&error);
-    return FALSE;
-  }
-  error:
-  {
-    GST_ELEMENT_ERROR (self, LIBRARY, INIT,
-                       ("Subclass failed to initialize."), (NULL));
-    return FALSE;
-  }
 }
 
 static gboolean
@@ -2614,10 +2454,18 @@ gst_amc_video_dec_decide_allocation (GstVideoDecoder * bdec, GstQuery * query)
   gst_query_parse_allocation (query, &caps, &need_pool);
   if (_caps_are_rgba_with_gl_memory (caps)) {
 
-    if (!gst_gl_base_filter_find_gl_context_unlocked (self))
+    GST_TRACE ("before gst_gl_ensure_element_data");
+
+    if (!gst_gl_ensure_element_data (self, &self->gl_display,
+            &self->other_gl_context))
+      return FALSE;
+
+    GST_TRACE ("gst_gl_ensure_element_data returned gl_context %p", self->other_gl_context);
+
+    if (!_find_local_gl_context (self))
       goto out;
 
-    GST_TRACE_OBJECT (self, "gst_gl_base_filter_find_gl_context_unlocked returned gl_context %p", self->gl_context);
+    GST_TRACE ("_find_local_gl_context returned gl_context %p", self->gl_context);
 #if 0
     if (!self->gl_context) {
       GST_OBJECT_LOCK (self->gl_display);
