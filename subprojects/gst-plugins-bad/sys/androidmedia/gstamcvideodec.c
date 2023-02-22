@@ -1456,6 +1456,7 @@ retry:
 
     GST_TRACE ("new gl_sync %p result %p", sync, sync->result);
 
+    GST_TRACE_OBJECT (self, "gst_buffer_add_gl_sync_meta_full with context %p", self->gl_context);
     sync_meta = gst_buffer_add_gl_sync_meta_full (self->gl_context, outbuf,
         sync);
     sync_meta->set_sync = _amc_gl_set_sync;
