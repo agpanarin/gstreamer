@@ -196,7 +196,7 @@ _find_local_gl_context_unlocked (GstGLBaseFilter * filter)
    * context_lock. Our query could block on the same lock in the other element.
    */
   ret =
-      gst_gl_query_local_gl_context (GST_ELEMENT (filter), GST_PAD_SRC,
+      gst_gl_query_local_gl_context (GST_ELEMENT (filter), GST_PAD_SINK,
       &context);
   g_rec_mutex_lock (&filter->priv->context_lock);
   if (ret) {
@@ -225,7 +225,7 @@ _find_local_gl_context_unlocked (GstGLBaseFilter * filter)
    * context_lock. Our query could block on the same lock in the other element.
    */
   ret =
-      gst_gl_query_local_gl_context (GST_ELEMENT (filter), GST_PAD_SINK,
+      gst_gl_query_local_gl_context (GST_ELEMENT (filter), GST_PAD_SRC,
       &context);
   g_rec_mutex_lock (&filter->priv->context_lock);
   if (ret) {
