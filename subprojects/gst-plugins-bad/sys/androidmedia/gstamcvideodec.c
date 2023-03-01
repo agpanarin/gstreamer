@@ -1207,7 +1207,7 @@ _amc_gl_wait_gl (GstGLContext * context, struct gl_wait *wait)
 {
   struct gl_sync *sync = wait->sync_meta->data;
 
-  GST_TRACE_OBJECT (sync->sink, "waiting with context %p", context);
+  GST_TRACE_OBJECT (sync->sink, "_amc_gl_wait_gl: waiting with context %p", context);
   g_mutex_lock (&sync->sink->gl_lock);
   wait->ret = _amc_gl_iterate_queue_unlocked (wait->sync_meta, TRUE);
   g_mutex_unlock (&sync->sink->gl_lock);
@@ -1221,6 +1221,7 @@ _amc_gl_wait (GstGLSyncMeta * sync_meta, GstGLContext * context)
 
   wait.sync_meta = sync_meta;
   wait.ret = FALSE;
+  GST_TRACE_OBJECT (sync->sink, "_amc_gl_wait: waiting with context %p", context);
   gst_gl_context_thread_add (context,
       (GstGLContextThreadFunc) _amc_gl_wait_gl, &wait);
 
