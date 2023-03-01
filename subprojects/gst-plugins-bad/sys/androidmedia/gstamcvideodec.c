@@ -2436,9 +2436,16 @@ _caps_are_rgba_with_gl_memory (GstCaps * caps)
 static gboolean
 _find_local_gl_context (GstAmcVideoDec * self)
 {
-  if (gst_gl_query_local_gl_context (GST_ELEMENT (self), GST_PAD_SRC,
-          &self->gl_context))
+  if (gst_gl_query_local_gl_context (GST_ELEMENT (self), GST_PAD_SINK,
+                                     &self->gl_context)) {
+    GST_TRACE_OBJECT (self, "sink: found local context %p", self->gl_context);
     return TRUE;
+  }
+  if (gst_gl_query_local_gl_context (GST_ELEMENT (self), GST_PAD_SRC,
+          &self->gl_context)) {
+    GST_TRACE_OBJECT (self, "src: found local context %p", self->gl_context);
+    return TRUE;
+  }
   return FALSE;
 }
 
